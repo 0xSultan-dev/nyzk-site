@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+/* ============================================================
+   NyZk — design tokens
+   Dark, cinematic. Purple as the brand halo, Kick green for
+   anything "live / on Kick".
+   ============================================================ */
+:root {
+  --background: #07060b;
+  --surface: #0e0b16;
+  --surface-2: #16111f;
+  --border: #241a33;
+  --foreground: #f2edf7;
+  --muted: #a99cc0;
+
+  --purple: #a855f7;
+  --purple-bright: #c084fc;
+  --purple-deep: #6d28d9;
+  --kick: #53fc18;
+
+  --glow: 168, 85, 247;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-purple: var(--purple);
+  --color-purple-bright: var(--purple-bright);
+  --color-purple-deep: var(--purple-deep);
+  --color-kick: var(--kick);
+
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
+  --font-arabic: var(--font-arabic);
+}
+
+* {
+  border-color: var(--border);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Section anchoring under fixed nav */
+section[id] {
+  scroll-margin-top: 5rem;
+}
+
+.font-display {
+  font-family: var(--font-display), system-ui, sans-serif;
+}
+.font-arabic {
+  font-family: var(--font-arabic), var(--font-body), sans-serif;
+}
+
+/* Utility: soft brand glow */
+.glow-purple {
+  box-shadow: 0 0 60px -12px rgba(var(--glow), 0.55);
+}
+.text-glow {
+  text-shadow: 0 0 40px rgba(var(--glow), 0.65);
+}
+
+/* Thin custom scrollbar (chat, clip rows) */
+.scroll-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.scroll-thin::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 999px;
+}
+.scroll-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@keyframes pulse-live {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.85); }
+}
+.live-dot {
+  animation: pulse-live 1.4s ease-in-out infinite;
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.float-slow {
+  animation: float-slow 6s ease-in-out infinite;
+}

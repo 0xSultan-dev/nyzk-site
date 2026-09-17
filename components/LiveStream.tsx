@@ -1,0 +1,107 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import type { KickChannel } from "@/lib/kick";
+import { KICK_SLUG, site } from "@/lib/site";
+import { SectionTitle } from "./Reveal";
+
+export function LiveStream({ initial }: { initial: KickChannel | null }) {
+  const [channel, setChannel] = useState<KickChannel | null>(initial);
+
+  // Poll live status every 30s.
+  useEffect(() => {
+    let cancelled = false;
+    const tick = async () => {
+      try {
+        const res = await fetch("/api/kick", { cache: "no-store" });
+        const json = (await res.json()) as { channel: KickChannel | null };
+        if (!cancelled && json.channel) setChannel(json.channel);
+      } catch {
+        /* keep last known state */
+      }
+    };
+    const id = setInterval(tick, 30_000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, []);
+
+  const live = channel?.live ?? false;
+
+  return (
+    <section id="live" className="relative mx-auto max-w-7xl px-5 py-24">
+      <SectionTitle eyebrow="Watch" title="Live Stream" arabic="البث المباشر" />
+
+      <div className="flex flex-col gap-4 lg:flex-row">
+        {/* Player */}
+        <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-border bg-black lg:flex-1">
+          <div className="absolute left-4 top-4 z-10 flex items-center gap-2 rounded-full bg-black/70 px-3 py-1.5 backdrop-blur">
+            <span
+              className={`h-2.5 w-2.5 rounded-full ${
+                live ? "live-dot bg-red-500" : "bg-muted"
+              }`}
+            />
+            <span className="text-xs font-bold uppercase tracking-wide">
+              {live ? "Live" : "Offline"}
+            </span>
+            {live && channel?.viewers != null && (
+              <span className="text-xs text-muted">
+                · {channel.viewers.toLocaleString()} watching
+              </span>
+            )}
+          </div>
+
+          {live ? (
+            <iframe
+              src={`https://player.kick.com/${KICK_SLUG}`}
+              title="NyZk live"
+              allowFullScreen
+              className="h-full w-full"
+            />
+          ) : (
+            <div className="flex h-full flex-col items-center justify-center gap-4 bg-[radial-gradient(60%_60%_at_50%_40%,rgba(124,58,237,0.18),transparent)] text-center">
+              <p className="font-display text-2xl font-bold">Currently offline</p>
+              <p className="max-w-sm text-sm text-muted">
+                {channel?.title
+                  ? `Last: ${channel.title}`
+                  : "The stream isn't live right now — check the socials for the next one."}
+              </p>
+              <a
+                href={site.kickUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-full border border-kick/40 px-5 py-2 text-sm font-semibold text-kick transition-colors hover:bg-kick hover:text-black"
+              >
+                Follow on Kick
+              </a>
+            </div>
+          )}
+        </div>
+
+        {/* Chat */}
+        <div className="flex w-full flex-col overflow-hidden rounded-2xl border border-border bg-surface lg:w-[340px]">
+          <div className="flex items-center justify-between border-b border-border px-4 py-3">
+            <span className="text-sm font-bold">Live Chat</span>
+            <span className="font-arabic text-xs text-muted" dir="rtl">
+              الشات الحي
+            </span>
+          </div>
+          <iframe
+            src={`https://kick.com/popout/${KICK_SLUG}/chat`}
+            title="NyZk chat"
+            className="h-[420px] w-full flex-1 lg:h-auto"
+          />
+          <a
+            href={site.kickUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="m-3 rounded-xl bg-kick py-3 text-center text-sm font-bold text-black transition-transform hover:scale-[1.02]"
+          >
+            Open stream on Kick →
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
