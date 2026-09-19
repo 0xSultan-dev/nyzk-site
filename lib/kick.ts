@@ -146,6 +146,50 @@ export async function getKickChannel(slug: string): Promise<KickChannel | null> 
   return (await fromInternal(slug)) ?? (await fromOfficial(slug));
 }
 
+export type KickGifter = { rank: number; name: string; value: string; href: string };
+export type KickGiftBoards = { week: KickGifter[]; month: KickGifter[]; all: KickGifter[] };
+
+type GiftRow = { username?: unknown; quantity?: unknown };
+
+function toGifters(rows: unknown, slug: string): KickGifter[] {
+  if (!Array.isArray(rows)) return [];
+  return (rows as GiftRow[])
+    .map((r) => ({ name: str(r.username), qty: num(r.quantity) }))
+    .filter((r): r is { name: string; qty: number } => r.name != null && r.qty != null && r.qty > 0)
+    .sort((a, b) => b.qty - a.qty)
+    .slice(0, 10)
+    .map((r, i) => ({
+      rank: i + 1,
+      name: r.name,
+      value: r.qty.toLocaleString(),
+      href: `https://kick.com/${encodeURIComponent(r.name)}`,
+    }));
+}
+
+/**
+ * Gifted-subs leaderboards from Kick's internal v2 endpoint — week / month /
+ * all-time. Empty (→ "Soon") on any failure or when the channel has no gifts.
+ */
+export async function getKickGiftLeaderboards(slug: string): Promise<KickGiftBoards> {
+  const empty: KickGiftBoards = { week: [], month: [], all: [] };
+  try {
+    const res = await fetch(`${V2_BASE}/channels/${encodeURIComponent(slug)}/leaderboards`, {
+      headers: { Accept: "application/json", "User-Agent": UA },
+      next: { revalidate: 60 },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) return empty;
+    const d = (await res.json()) as Record<string, unknown>;
+    return {
+      week: toGifters(d.gifts_week, slug),
+      month: toGifters(d.gifts_month, slug),
+      all: toGifters(d.gifts, slug),
+    };
+  } catch {
+    return empty;
+  }
+}
+
 export type KickClip = {
   id: string;
   title: string;
@@ -153,6 +197,8 @@ export type KickClip = {
   duration: number | null;
   views: number | null;
   url: string;
+  /** direct HLS (.m3u8) stream for on-site playback */
+  videoUrl: string | null;
   createdAt: string | null;
 };
 
@@ -175,6 +221,7 @@ export async function getKickClips(slug: string): Promise<KickClip[]> {
         duration: num(clip.duration),
         views: num(clip.view_count) ?? num(clip.views),
         url: `https://kick.com/${slug}/clips/${id}`,
+        videoUrl: str(clip.video_url) ?? str(clip.clip_url),
         createdAt: str(clip.created_at),
       };
     });

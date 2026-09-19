@@ -47,7 +47,7 @@ export function SectionTitle({
         {title}
       </h2>
       {arabic && (
-        <p className="font-arabic mt-2 text-lg text-muted" dir="rtl">
+        <p className="font-arabic-display mt-2 text-xl text-muted" dir="rtl">
           {arabic}
         </p>
       )}

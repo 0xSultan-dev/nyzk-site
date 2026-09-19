@@ -37,8 +37,8 @@ export const socials: Social[] = [
   {
     key: "instagram",
     label: "Instagram",
-    handle: "soon",
-    url: "#",
+    handle: "nyzk_6",
+    url: "https://www.instagram.com/nyzk_6",
     color: "#e1306c",
     icon3d: "/icons3d/instagram.png",
   },
@@ -47,7 +47,8 @@ export const socials: Social[] = [
     label: "TikTok",
     handle: tiktok,
     url: `https://www.tiktok.com/@${tiktok}`,
-    color: "#25f4ee",
+    // 3D icon is black — a neutral halo suits it better than the cyan brand color
+    color: "#e6e6ee",
     icon3d: "/icons3d/tiktok.png",
   },
   {
@@ -61,16 +62,16 @@ export const socials: Social[] = [
   {
     key: "snapchat",
     label: "Snapchat",
-    handle: "soon",
-    url: "#",
+    handle: "nyzk_6",
+    url: "https://www.snapchat.com/@nyzk_6",
     color: "#fffc00",
     icon3d: "/icons3d/snapchat.png",
   },
   {
     key: "discord",
     label: "Discord",
-    handle: "soon",
-    url: "#",
+    handle: "discord.gg/nyzk",
+    url: "https://discord.gg/nyzk",
     color: "#5865f2",
     icon3d: "/icons3d/discord.png",
   },
@@ -81,6 +82,10 @@ export type Character = {
   name: string;
   /** short line shown on the card face */
   role?: string;
+  /** tiny category label shown on the card (e.g. "Main", "Alter Ego") */
+  tag?: string;
+  /** one-line signature quote shown in the expanded view */
+  quote?: string;
   /** full bio revealed on expand; empty => "Soon" */
   bio?: string;
   /** stats/traits revealed on expand */
@@ -96,36 +101,15 @@ export type Character = {
  */
 export const characters: Character[] = [
   {
-    id: "nyzk",
-    name: "NyZk",
-    role: "The One",
-    bio: "",
+    id: "rayan-vorhees",
+    name: "RAYAN VORHEES",
+    quote: "",
+    bio: "شخصية إجرامية. أخو OG VORHEES أكبر مجرم داخل البلدة الغامضة.",
     accent: "#a855f7",
-    image: "/characters/nyzk.png",
+    image: "/characters/rayan-vorhees.png",
     traits: [
-      { label: "Rank", value: "#1" },
-      { label: "Since", value: "Soon" },
+      { label: "Family", value: "VORHEES" },
+      { label: "Gang", value: "Scrap Army" },
     ],
-  },
-  {
-    id: "char-2",
-    name: "Character 02",
-    role: "Soon",
-    accent: "#c084fc",
-    image: "/characters/char-2.png",
-  },
-  {
-    id: "char-3",
-    name: "Character 03",
-    role: "Soon",
-    accent: "#7c3aed",
-    image: "/characters/char-3.png",
-  },
-  {
-    id: "char-4",
-    name: "Character 04",
-    role: "Soon",
-    accent: "#8b5cf6",
-    image: "/characters/char-4.png",
   },
 ];

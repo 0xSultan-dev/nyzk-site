@@ -8,6 +8,7 @@ const links = [
   { href: "#live", label: "Live" },
   { href: "#clips", label: "Clips" },
   { href: "#stats", label: "Stats" },
+  { href: "#leaderboards", label: "Ranks" },
   { href: "#socials", label: "Socials" },
 ];
 

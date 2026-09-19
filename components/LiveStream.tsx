@@ -42,13 +42,18 @@ export function LiveStream({ initial }: { initial: KickChannel | null }) {
                 live ? "live-dot bg-red-500" : "bg-muted"
               }`}
             />
-            <span className="text-xs font-bold uppercase tracking-wide">
-              {live ? "Live" : "Offline"}
-            </span>
-            {live && channel?.viewers != null && (
-              <span className="text-xs text-muted">
-                · {channel.viewers.toLocaleString()} watching
-              </span>
+            {live ? (
+              channel?.viewers != null ? (
+                // live → show the viewer count instead of the word "Live"
+                <span className="flex items-center gap-1 text-xs font-bold tabular-nums tracking-wide">
+                  {channel.viewers.toLocaleString()}
+                  <span className="font-medium normal-case text-muted">watching</span>
+                </span>
+              ) : (
+                <span className="text-xs font-bold uppercase tracking-wide">Live</span>
+              )
+            ) : (
+              <span className="text-xs font-bold uppercase tracking-wide">Offline</span>
             )}
           </div>
 

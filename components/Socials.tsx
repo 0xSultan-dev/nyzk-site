@@ -1,19 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { socials, type Social } from "@/lib/site";
 import { SectionTitle } from "./Reveal";
 
 /** Minimal brand glyphs — fallback until the 3D PNGs are dropped in /public/icons3d */
-function Glyph({ k }: { k: string }) {
-  const common = "h-9 w-9";
+function Glyph({ k, className = "h-9 w-9" }: { k: string; className?: string }) {
+  const common = className;
   switch (k) {
-    case "kick":
-      return (
-        <svg viewBox="0 0 24 24" className={common} fill="currentColor">
-          <path d="M4 3h4v6l4-6h5l-6 9 6 9h-5l-4-6v6H4z" />
-        </svg>
-      );
     case "x":
       return (
         <svg viewBox="0 0 24 24" className={common} fill="currentColor">
@@ -51,63 +46,81 @@ function Glyph({ k }: { k: string }) {
   }
 }
 
-function Card({ s, i }: { s: Social; i: number }) {
+function Card({ s, i, wide }: { s: Social; i: number; wide?: boolean }) {
   const soon = s.handle === "soon";
   const Wrapper = soon ? "div" : "a";
+  const [broken, setBroken] = useState(false);
+  const showImg = Boolean(s.icon3d) && !broken;
   return (
     <motion.div
       initial={{ opacity: 0, y: 30, scale: 0.95 }}
       whileInView={{ opacity: 1, y: 0, scale: 1 }}
       viewport={{ once: true, margin: "-60px" }}
-      transition={{ duration: 0.5, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.5, delay: i * 0.07, ease: [0.22, 1, 0.36, 1] }}
     >
       <Wrapper
-        {...(!soon
-          ? { href: s.url, target: "_blank", rel: "noreferrer" }
-          : {})}
-        className={`group relative flex aspect-square flex-col items-center justify-center gap-3 overflow-hidden rounded-3xl border border-border bg-surface transition-transform ${
-          soon ? "cursor-default opacity-70" : "hover:-translate-y-2"
-        }`}
+        {...(!soon ? { href: s.url, target: "_blank", rel: "noreferrer" } : {})}
+        className={`group relative flex h-36 items-center justify-center overflow-hidden rounded-[1.75rem] border border-border bg-surface transition-transform duration-300 ease-out sm:h-40 ${
+          wide ? "flex-row gap-5" : "flex-col gap-2.5"
+        } ${soon ? "cursor-default opacity-70" : "hover:-translate-y-2"}`}
       >
         <span
-          className="absolute -bottom-6 h-24 w-24 rounded-full blur-2xl transition-opacity duration-300 group-hover:opacity-70"
-          style={{ background: s.color, opacity: 0.25 }}
+          className="absolute -bottom-8 h-32 w-32 rounded-full blur-3xl transition-opacity duration-300 group-hover:opacity-80"
+          style={{ background: s.color, opacity: 0.28 }}
         />
         {/* 3D icon slot — the PNG shows once added; glyph is the fallback */}
         <span
-          className="relative z-10 flex h-16 w-16 items-center justify-center rounded-2xl float-slow"
+          className={`relative z-10 flex items-center justify-center rounded-3xl ${
+            wide ? "h-24 w-24" : "h-16 w-16"
+          }`}
           style={{ color: s.color }}
         >
-          {s.icon3d && (
+          {showImg ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={s.icon3d}
               alt={s.label}
-              className="absolute inset-0 h-full w-full object-contain"
-              onError={(e) => {
-                (e.currentTarget as HTMLImageElement).style.display = "none";
-              }}
+              className="absolute inset-0 h-full w-full object-contain drop-shadow-[0_8px_20px_rgba(0,0,0,0.45)] transition-transform duration-300 ease-out group-hover:-translate-y-1 group-hover:rotate-3"
+              onError={() => setBroken(true)}
             />
+          ) : (
+            <Glyph k={s.key} className={wide ? "h-14 w-14" : "h-9 w-9"} />
           )}
-          <Glyph k={s.key} />
         </span>
-        <div className="relative z-10 text-center">
-          <p className="font-display text-sm font-bold">{s.label}</p>
-          <p className="text-xs text-muted">{soon ? "Soon" : `@${s.handle}`}</p>
+        <div className={`relative z-10 ${wide ? "text-left" : "text-center"}`}>
+          <p className={`font-display font-bold ${wide ? "text-3xl" : "text-base"}`}>{s.label}</p>
+          <p className={`text-muted ${wide ? "text-base" : "text-sm"}`}>
+            {soon ? "Soon" : s.key === "discord" ? s.handle : `@${s.handle}`}
+          </p>
         </div>
       </Wrapper>
     </motion.div>
   );
 }
 
+// Fixed order requested: Instagram, Snapchat / TikTok, X / Discord (centered).
+const ORDER = ["instagram", "snapchat", "tiktok", "x", "discord"];
+
 export function Socials() {
+  const ordered = ORDER.map((k) => socials.find((s) => s.key === k)).filter(
+    (s): s is Social => Boolean(s),
+  );
+  const main = ordered.slice(0, 4);
+  const last = ordered[4];
+
   return (
     <section id="socials" className="relative mx-auto max-w-7xl px-5 py-24">
       <SectionTitle eyebrow="Follow" title="Social Media" arabic="حسابات السوشل ميديا" />
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-        {socials.map((s, i) => (
+
+      <div className="mx-auto grid max-w-2xl grid-cols-2 gap-4 sm:gap-5">
+        {main.map((s, i) => (
           <Card key={s.key} s={s} i={i} />
         ))}
+        {last && (
+          <div className="col-span-2">
+            <Card s={last} i={4} wide />
+          </div>
+        )}
       </div>
     </section>
   );

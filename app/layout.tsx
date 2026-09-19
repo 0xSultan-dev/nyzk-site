@@ -1,23 +1,30 @@
 import type { Metadata } from "next";
-import { Sora, Inter, Cairo } from "next/font/google";
+import { Space_Grotesk, Outfit, Orbitron } from "next/font/google";
 import "./globals.css";
+// Thmanyah (ثمانية) Arabic font — official-recommended web package (CDN woff2 + @font-face).
+import "@dawod/thmanyah-font-web/sans.css";
 
-const display = Sora({
+// English headings — distinctive, modern.
+const display = Space_Grotesk({
   variable: "--font-display",
   subsets: ["latin"],
-  weight: ["600", "700", "800"],
+  weight: ["500", "600", "700"],
 });
 
-const body = Inter({
+// English body — clean, friendly.
+const body = Outfit({
   variable: "--font-body",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
-const arabic = Cairo({
-  variable: "--font-arabic",
-  subsets: ["arabic"],
-  weight: ["400", "600", "700"],
+// Brand wordmark font (the "NyZk" logo/title) — techy, gaming feel.
+const brand = Orbitron({
+  variable: "--font-brand",
+  subsets: ["latin"],
+  weight: ["700", "800", "900"],
 });
+
 
 export const metadata: Metadata = {
   title: "NyZk — #1",
@@ -37,7 +44,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${display.variable} ${body.variable} ${arabic.variable} h-full antialiased`}
+      className={`${display.variable} ${body.variable} ${brand.variable} h-full antialiased`}
     >
       <body className="min-h-full">{children}</body>
     </html>

@@ -1,16 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import type { Leader, SiteStats } from "@/lib/stats";
+
+const EASE = [0.22, 1, 0.36, 1] as const;
 import { compact } from "@/lib/format";
+import { socials } from "@/lib/site";
 import { SectionTitle } from "./Reveal";
 
+const urlFor = (key: string) => socials.find((s) => s.key === key)?.url;
+
+// Order matters: 2 per row → row 1: Kick + TikTok, row 2: X + Discord.
+// icon = ready-made 3D PNG under /public/icons3d (drop kick.png to complete the set).
 const followerMeta = [
-  { key: "kick", label: "Kick Followers", color: "#53fc18", arabic: "متابعين كيك" },
-  { key: "tiktok", label: "TikTok Followers", color: "#25f4ee", arabic: "متابعين تيك توك" },
-  { key: "x", label: "X Followers", color: "#e7e7e7", arabic: "متابعين X" },
-  { key: "discord", label: "Discord Members", color: "#5865f2", arabic: "أعضاء ديسكورد" },
+  { key: "kick", label: "Kick Followers", color: "#53fc18", arabic: "متابعين كيك", icon: "/icons3d/kick.svg", iconClass: "scale-90" },
+  { key: "tiktok", label: "TikTok Followers", color: "#25f4ee", arabic: "متابعين تيك توك", icon: "/icons3d/tiktok.png", iconClass: "" },
+  { key: "x", label: "X Followers", color: "#e7e7e7", arabic: "متابعين X", icon: "/icons3d/x.png", iconClass: "" },
+  { key: "discord", label: "Discord Members", color: "#5865f2", arabic: "أعضاء ديسكورد", icon: "/icons3d/discord.png", iconClass: "" },
 ] as const;
 
 function SoonPill() {
@@ -26,36 +33,54 @@ function FollowerTile({
   arabic,
   color,
   value,
+  icon,
+  iconClass,
   i,
 }: {
   label: string;
   arabic: string;
   color: string;
   value: number | null;
+  icon?: string;
+  iconClass?: string;
   i: number;
 }) {
+  const [broken, setBroken] = useState(false);
+  const showIcon = Boolean(icon) && !broken;
   return (
     <motion.div
       initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
-      transition={{ duration: 0.5, delay: i * 0.07 }}
-      className="relative overflow-hidden rounded-2xl border border-border bg-surface p-6"
+      transition={{ duration: 0.55, delay: i * 0.08, ease: EASE }}
+      className="group relative flex aspect-[4/3] flex-col justify-end overflow-hidden rounded-3xl border border-border bg-surface p-6"
     >
       <span
-        className="absolute right-0 top-0 h-20 w-20 rounded-full blur-2xl"
-        style={{ background: color, opacity: 0.18 }}
+        className="absolute -right-6 -top-6 h-32 w-32 rounded-full blur-3xl transition-opacity duration-300 group-hover:opacity-90"
+        style={{ background: color, opacity: 0.22 }}
       />
-      <span
-        className="inline-block h-2.5 w-2.5 rounded-full"
-        style={{ background: color }}
-      />
+
+      {/* Ready-made 3D logo in the corner (falls back to a color dot) */}
+      <div className="absolute right-4 top-4 h-14 w-14 sm:h-20 sm:w-20">
+        {showIcon ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={icon}
+            alt={label}
+            className={`h-full w-full object-contain drop-shadow-[0_10px_24px_rgba(0,0,0,0.5)] transition-transform duration-300 group-hover:-translate-y-1 group-hover:rotate-3 ${iconClass ?? ""}`}
+            onError={() => setBroken(true)}
+          />
+        ) : (
+          <span className="mt-1 block h-3 w-3 rounded-full" style={{ background: color }} />
+        )}
+      </div>
+
       {/* Number in ink, not the brand color (accessibility) */}
-      <p className="font-display mt-4 text-4xl font-extrabold tabular-nums">
+      <p className="font-display relative text-4xl font-extrabold tabular-nums sm:text-5xl">
         {value == null ? <SoonPill /> : compact(value)}
       </p>
-      <p className="mt-2 text-sm text-muted">{label}</p>
-      <p className="font-arabic text-xs text-muted/70" dir="rtl">
+      <p className="relative mt-2 text-sm text-muted">{label}</p>
+      <p className="font-arabic relative text-xs text-muted/70" dir="rtl">
         {arabic}
       </p>
     </motion.div>
@@ -67,14 +92,22 @@ function Board({
   arabic,
   hint,
   rows,
+  delay = 0,
 }: {
   title: string;
   arabic: string;
   hint?: string;
   rows: Leader[];
+  delay?: number;
 }) {
   return (
-    <div className="flex flex-col rounded-2xl border border-border bg-surface p-6">
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ duration: 0.55, delay, ease: EASE }}
+      className="flex flex-col rounded-2xl border border-border bg-surface p-6"
+    >
       <div className="mb-4 flex items-baseline justify-between">
         <div>
           <h3 className="font-display text-lg font-bold">{title}</h3>
@@ -110,7 +143,18 @@ function Board({
               >
                 {r.rank}
               </span>
-              <span className="flex-1 truncate text-sm font-medium">{r.name}</span>
+              {r.href ? (
+                <a
+                  href={r.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex-1 truncate text-sm font-medium transition-colors hover:text-purple-bright"
+                >
+                  {r.name}
+                </a>
+              ) : (
+                <span className="flex-1 truncate text-sm font-medium">{r.name}</span>
+              )}
               <span className="font-display text-sm font-bold tabular-nums text-purple-bright">
                 {r.value}
               </span>
@@ -118,14 +162,24 @@ function Board({
           ))}
         </ol>
       )}
-    </div>
+    </motion.div>
   );
 }
 
 type Period = "week" | "month" | "all";
 
 export function Stats({ stats }: { stats: SiteStats }) {
-  const [period, setPeriod] = useState<Period>("all");
+  // Default to the widest period that actually has data, so a fresh gift that
+  // Kick has only recorded in week/month (all-time lags) still shows on load.
+  const [period, setPeriod] = useState<Period>(() =>
+    stats.topGifters.all.length
+      ? "all"
+      : stats.topGifters.month.length
+        ? "month"
+        : stats.topGifters.week.length
+          ? "week"
+          : "all",
+  );
   const periods: { key: Period; label: string; ar: string }[] = [
     { key: "week", label: "Week", ar: "الأسبوع" },
     { key: "month", label: "Month", ar: "الشهر" },
@@ -133,27 +187,55 @@ export function Stats({ stats }: { stats: SiteStats }) {
   ];
 
   return (
+    <>
+    {/* ── Part 1: Accounts — two squares per row (Kick+TikTok / X+Discord) ── */}
     <section id="stats" className="relative mx-auto max-w-7xl px-5 py-24">
       <SectionTitle eyebrow="The Numbers" title="Community Stats" arabic="الإحصائيات" />
 
-      {/* Follower tiles */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {followerMeta.map((m, i) => (
-          <FollowerTile
-            key={m.key}
-            label={m.label}
-            arabic={m.arabic}
-            color={m.color}
-            value={stats.followers[m.key]}
-            i={i}
-          />
-        ))}
+      <div className="mx-auto grid max-w-3xl grid-cols-2 gap-4 sm:gap-6">
+        {followerMeta.map((m, i) => {
+          const url = urlFor(m.key);
+          const tile = (
+            <FollowerTile
+              label={m.label}
+              arabic={m.arabic}
+              color={m.color}
+              icon={m.icon}
+              iconClass={m.iconClass}
+              value={stats.followers[m.key]}
+              i={i}
+            />
+          );
+          return url ? (
+            <a
+              key={m.key}
+              href={url}
+              target="_blank"
+              rel="noreferrer"
+              className="block transition-transform hover:-translate-y-1"
+            >
+              {tile}
+            </a>
+          ) : (
+            <div key={m.key}>{tile}</div>
+          );
+        })}
       </div>
+    </section>
 
-      {/* Leaderboards */}
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+    {/* ── Part 2: Leaderboards — their own section ── */}
+    <section id="leaderboards" className="relative mx-auto max-w-7xl px-5 py-24">
+      <SectionTitle eyebrow="Rankings" title="Leaderboards" arabic="المتصدّرون" />
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Top Gifters with period tabs */}
-        <div className="flex flex-col rounded-2xl border border-border bg-surface p-6">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.55, delay: 0, ease: EASE }}
+          className="flex flex-col rounded-2xl border border-border bg-surface p-6"
+        >
           <div className="mb-4 flex items-center justify-between">
             <h3 className="font-display text-lg font-bold">Top Gifters</h3>
             <div className="flex rounded-full border border-border p-0.5">
@@ -178,39 +260,54 @@ export function Stats({ stats }: { stats: SiteStats }) {
               <p className="text-xs text-muted">Gifting leaderboard connects soon.</p>
             </div>
           ) : (
-            <ol className="flex flex-col gap-1">
-              {stats.topGifters[period].map((r) => (
-                <li
-                  key={r.rank}
-                  className="flex items-center gap-3 rounded-xl px-3 py-2 hover:bg-surface-2"
-                >
-                  <span className="font-display w-6 text-center text-sm font-extrabold text-muted">
-                    {r.rank}
-                  </span>
-                  <span className="flex-1 truncate text-sm font-medium">{r.name}</span>
-                  <span className="font-display text-sm font-bold text-purple-bright">
-                    {r.value}
-                  </span>
-                </li>
-              ))}
-            </ol>
+            <AnimatePresence mode="wait">
+              <motion.ol
+                key={period}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.25, ease: EASE }}
+                className="flex flex-col gap-1"
+              >
+                {stats.topGifters[period].map((r) => (
+                  <li
+                    key={r.rank}
+                    className="flex items-center gap-3 rounded-xl px-3 py-2 hover:bg-surface-2"
+                  >
+                    <span className="font-display w-6 text-center text-sm font-extrabold text-muted">
+                      {r.rank}
+                    </span>
+                    {r.href ? (
+                      <a
+                        href={r.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex-1 truncate text-sm font-medium transition-colors hover:text-purple-bright"
+                      >
+                        {r.name}
+                      </a>
+                    ) : (
+                      <span className="flex-1 truncate text-sm font-medium">{r.name}</span>
+                    )}
+                    <span className="font-display text-sm font-bold text-purple-bright">
+                      {r.value}
+                    </span>
+                  </li>
+                ))}
+              </motion.ol>
+            </AnimatePresence>
           )}
-        </div>
+        </motion.div>
 
         <Board
           title="Stream Regulars"
           arabic="الأكثر حضورًا"
-          hint="Most active across all streams · hours watched (signed in on Kick)"
+          hint="Ranked by watch time · signed in on Kick"
           rows={stats.streamRegulars}
-        />
-
-        <Board
-          title="Kick Top Gifters"
-          arabic="القفنان في الكيك"
-          hint="All-time on Kick"
-          rows={stats.kickTopGifters}
+          delay={0.1}
         />
       </div>
     </section>
+    </>
   );
 }

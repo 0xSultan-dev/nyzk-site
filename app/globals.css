@@ -35,7 +35,7 @@
 
   --font-sans: var(--font-body);
   --font-display: var(--font-display);
-  --font-arabic: var(--font-arabic);
+  --font-brand: var(--font-brand);
 }
 
 * {
@@ -44,6 +44,19 @@
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+}
+
+/* Respect users who prefer less motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 body {
@@ -62,8 +75,17 @@ section[id] {
 .font-display {
   font-family: var(--font-display), system-ui, sans-serif;
 }
+.font-brand {
+  font-family: var(--font-brand), var(--font-display), system-ui, sans-serif;
+}
+/* Thmanyah (ثمانية) — Arabic type */
 .font-arabic {
-  font-family: var(--font-arabic), var(--font-body), sans-serif;
+  font-family: "Thmanyah Sans", var(--font-body), sans-serif;
+  font-weight: 500;
+}
+.font-arabic-display {
+  font-family: "Thmanyah Sans", var(--font-body), sans-serif;
+  font-weight: 900;
 }
 
 /* Utility: soft brand glow */
@@ -101,4 +123,16 @@ section[id] {
 }
 .float-slow {
   animation: float-slow 6s ease-in-out infinite;
+}
+
+/* Light beam that sweeps fully across a button, fading in/out (no hard cut) */
+@keyframes sheen {
+  0%   { transform: translateX(-6rem) skewX(-20deg); opacity: 0; }
+  10%  { opacity: 1; }
+  40%  { opacity: 1; }
+  50%  { transform: translateX(17rem) skewX(-20deg); opacity: 0; }
+  100% { transform: translateX(17rem) skewX(-20deg); opacity: 0; }
+}
+.animate-sheen {
+  animation: sheen 3.4s ease-in-out infinite;
 }
